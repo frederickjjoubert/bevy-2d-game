@@ -1,15 +1,36 @@
+mod camera_follow_system;
 mod components;
+mod coordinate;
+mod generate_map_system;
+mod player_movement_system;
+mod player_sprite_system;
 
-use components::*;
+use camera_follow_system::*;
+pub use components::*;
+pub use coordinate::*;
+use generate_map_system::*;
+use player_movement_system::*;
+use player_sprite_system::*;
 
 use bevy::prelude::*;
+use bevy::window::PresentMode;
 
 
 fn main() {
     App::new()
+        .insert_resource(WindowDescriptor {
+            title: "Bevy 2D Game".to_string(),
+            width: 1600.,
+            height: 900.,
+            present_mode: PresentMode::Fifo,
+            ..default()
+        })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
-        .add_system(player_movement_system)
+        .add_startup_system(generate_map_system)
+        .add_system(player_movement_system.label("player_movement_system"))
+        .add_system(player_sprite_system.after("player_movement_system"))
+        .add_system(camera_follow_system.after("player_movement_system"))
         .run();
 }
 
@@ -17,69 +38,24 @@ fn main() {
 
 // Startup Systems
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // Spawn Camera
     commands.spawn_bundle(Camera2dBundle::default());
+    // Spawn Player
     commands.spawn_bundle(
         SpriteBundle {
             texture: asset_server.load("sprites/elf_m_idle_anim_f0.png"),
-            transform: Transform::from_xyz(0., 0., 0.),
+            transform: Transform::from_xyz(0., 0., 1.),
             ..Default::default()
         }
     )
+        .insert(CameraFollowTarget {})
         .insert(FacingDirection {
-            direction: FacingDirectionEnum::Up
+            direction: FacingDirectionEnum::Right
         })
         .insert(Player {})
         .insert(Movement { speed: 100.0 });
 }
 
-// Systems
-/// The sprite is animated by changing its translation depending on the time that has passed since
-/// the last frame.
-// fn sprite_movement(time: Res<Time>, mut sprite_position: Query<(&mut Direction, &mut Transform)>) {
-//     for (mut direction, mut transform) in &mut sprite_position {
-//         match *direction {
-//             Direction::Up => {
-//                 transform.translation.y += 150. * time.delta_seconds();
-//             }
-//             Direction::Down => {
-//                 transform.translation.y -= 150. * time.delta_seconds();
-//             }
-//             _ => {}
-//         }
-//
-//         if transform.translation.y > 200.0 {
-//             *direction = Direction::Down;
-//         } else if transform.translation.y < -200.0 {
-//             *direction = Direction::Up;
-//         }
-//     }
-// }
 
-fn player_movement_system(
-    time: Res<Time>,
-    keyboard: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Player, &mut Movement, &mut FacingDirection, &mut Transform)>,
-) {
-    for (_player, movement, mut direction, mut transform) in query.iter_mut() {
-        // Up
-        if keyboard.pressed(KeyCode::W) {
-            transform.translation.y += movement.speed * time.delta_seconds();
-            direction.direction = FacingDirectionEnum::Up;
-        }
-        // Down
-        if keyboard.pressed(KeyCode::S) {
-            transform.translation.y -= movement.speed * time.delta_seconds();
-            direction.direction = FacingDirectionEnum::Down;
-        }
-        // Left
-        if keyboard.pressed(KeyCode::A) {
-            transform.translation.x -= movement.speed * time.delta_seconds();
-            direction.direction = FacingDirectionEnum::Left;
-        }
-        // Right
-        if keyboard.pressed(KeyCode::D) {
-            transform.translation.x += movement.speed * time.delta_seconds();
-            direction.direction = FacingDirectionEnum::Right;
-        }
-    }
-}
+
+
