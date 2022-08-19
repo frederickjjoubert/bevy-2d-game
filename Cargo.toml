@@ -8,6 +8,7 @@ authors = ["Jacques Joubert"]
 
 [dependencies]
 bevy = { version = "0.8.0", features = ["dynamic"] }
+bevy-inspector-egui = "0.12.1"
 bevy_rapier2d = { version = "0.16.0", features = ["debug-render", "serde-serialize", "simd-stable"] }
 bracket-lib = "0.8.1"
 serde = "1.0.143"

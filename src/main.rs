@@ -19,6 +19,7 @@ pub use rect::*;
 use bevy::prelude::*;
 use bevy::render::texture::ImageSettings;
 use bevy::window::PresentMode;
+use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 
 
@@ -37,12 +38,16 @@ fn main() {
         .insert_resource(ImageSettings::default_nearest()) // prevents blurry sprites
         .insert_resource(map)
         .add_plugins(DefaultPlugins)
+        // Add the bevy_inspector_egui Plugin
+        .add_plugin(WorldInspectorPlugin::new())
+        // Add the bevy_rapier2d Plugin
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         // .add_plugin(RapierDebugRenderPlugin::default()) // Comment this in and out to debug colliders.
         .add_startup_system(setup_physics)
         .add_startup_system(setup_camera)
         .add_startup_system(draw_map_system.label("draw_map_system"))
         .add_startup_system(setup_player.after("draw_map_system"))
+        .add_startup_system(setup_music)
         .add_system(player_movement_system.label("player_movement_system"))
         .add_system(player_sprite_system.after("player_movement_system"))
         .add_system(camera_follow_system.after("player_movement_system"))
@@ -91,6 +96,11 @@ fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>, map: Res
 fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
     // Set Gravity to 0.0
     rapier_config.gravity = Vec2::ZERO;
+}
+
+fn setup_music(asset_server: Res<AssetServer>, audio: Res<Audio>) {
+    let music = asset_server.load("audio/Abstraction-LudumDare28-FourthTrack.ogg");
+    audio.play(music);
 }
 
 // References
