@@ -58,7 +58,9 @@ fn main() {
 
 // Startup Systems
 fn setup_camera(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands
+        .spawn_bundle(Camera2dBundle::default())
+        .insert(Name::new("Camera"));
 }
 
 fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>, map: Res<Map>) {
@@ -80,6 +82,7 @@ fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>, map: Res
             direction: FacingDirectionEnum::Right
         })
         .insert(Player {})
+        .insert(Name::new("Player"))
         .insert(Movement { speed: 100.0 })
         .insert(RigidBody::Dynamic)
         .insert(LockedAxes::ROTATION_LOCKED)
